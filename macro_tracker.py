@@ -3,7 +3,7 @@ from tkinter import ttk
 import sqlite3
 from datetime import datetime
 
-meal_list = None  # Define the meal_list as a global variable
+meal_list = None
 name_entry = None
 calories_entry = None
 fat_entry = None
@@ -20,11 +20,9 @@ def add_meal():
     carbohydrates = float(carbohydrates_entry.get())
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Store the meal data in the SQLite database
     conn = sqlite3.connect('FitnessApp/userdata.db')
     cursor = conn.cursor()
 
-    # Create the "meals" table if it doesn't exist
     cursor.execute('''CREATE TABLE IF NOT EXISTS meals (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT,
@@ -35,7 +33,6 @@ def add_meal():
                         date_added TEXT
                       )''')
 
-    # Insert the meal data into the "meals" table
     cursor.execute('''INSERT INTO meals (name, calories, fat, protein, carbohydrates, date_added)
                       VALUES (?, ?, ?, ?, ?, ?)''',
                    (name, calories, fat, protein, carbohydrates, current_time))
@@ -43,23 +40,19 @@ def add_meal():
     conn.commit()
     conn.close()
 
-    # Clear the input fields
     name_entry.delete(0, tk.END)
     calories_entry.delete(0, tk.END)
     fat_entry.delete(0, tk.END)
     protein_entry.delete(0, tk.END)
     carbohydrates_entry.delete(0, tk.END)
 
-    # Refresh the meal list
     refresh_meal_list()
 
 def refresh_meal_list():
     global meal_list
 
-    # Clear the meal list
     meal_list.delete(0, tk.END)
 
-    # Retrieve the meal data from the "meals" table
     conn = sqlite3.connect('FitnessApp/userdata.db')
     cursor = conn.cursor()
 
@@ -76,7 +69,6 @@ def refresh_meal_list():
     meals = cursor.fetchall()
     conn.close()
 
-    # Populate the meal list with the retrieved data
     for meal in meals:
         name = meal[0]
         calories = meal[1]
@@ -87,9 +79,6 @@ def refresh_meal_list():
         meal_info = f"{name} - Calories: {calories}, Fat: {fat}, Protein: {protein}, Carbohydrates: {carbohydrates}, Date Added: {date_added}"
         meal_list.insert(tk.END, meal_info)
 
-
-
-# Define the global variables for goal entry, days entry, and deficit label
 goal_entry = None
 days_entry = None
 deficit_label = None
@@ -97,7 +86,6 @@ deficit_label = None
 def setup_macro_tracker(macro_tracker_tab, notebook):
     global meal_list, name_entry, calories_entry, fat_entry, protein_entry, carbohydrates_entry, goal_entry, days_entry, deficit_label
 
-    # Create and place the widgets in the Macro Tracker tab
     macro_label = tk.Label(macro_tracker_tab, text="Macro Tracker", font=("Arial", 16, "bold"))
     macro_label.grid(row=0, column=0, columnspan=2, pady=10, sticky="w")
 
@@ -153,18 +141,18 @@ def setup_macro_tracker(macro_tracker_tab, notebook):
     add_meal_button.grid(row=10, column=0, pady=10, sticky="w")
 
     meal_list_label = tk.Label(macro_tracker_tab, text="Meal List:")
-    meal_list_label.grid(row=5, column=2, sticky="w")  # Adjust the row and column for the meal list label
+    meal_list_label.grid(row=5, column=2, sticky="w")
 
     meal_list = tk.Listbox(macro_tracker_tab, width=50)
-    meal_list.grid(row=6, column=2, rowspan=5, padx=5, pady=5, sticky="nsew")  # Adjust the row and column for the meal list
+    meal_list.grid(row=6, column=2, rowspan=5, padx=5, pady=5, sticky="nsew")
 
     refresh_meal_list()
 
     back_button = tk.Button(macro_tracker_tab, text="Back to BMI Calculator", command=lambda: notebook.select(0))
     back_button.grid(row=11, column=0, columnspan=2, pady=10, sticky="w")
 
-    macro_tracker_tab.grid_rowconfigure(6, weight=1)  # Allow the meal list to expand vertically
-
+    macro_tracker_tab.grid_rowconfigure(6, weight=1)
+    
 def calculate_daily_calorie_deficit():
     global goal_entry, days_entry, deficit_label
 
@@ -175,7 +163,6 @@ def calculate_daily_calorie_deficit():
         if num_days <= 0:
             raise ValueError("Number of days should be a positive integer.")
 
-        # Retrieve the earliest weight entry from the bmi_records database
         conn = sqlite3.connect('FitnessApp/userdata.db')
         cursor = conn.cursor()
 
@@ -196,8 +183,6 @@ def calculate_daily_calorie_deficit():
         print(earliest_weight)
 
         conn.close()
-
-       
 
         daily_deficit = ((weight_goal - earliest_weight) * 3500 / num_days)/10
         deficit_label.config(text=f"Approximate Daily Calorie Intake: {daily_deficit:.2f} calories")
